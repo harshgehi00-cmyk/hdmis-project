@@ -1,74 +1,74 @@
 # =========================================================
-# REQUIRED LIBRARIES IMPORT KARNA
+# HDMIS PROJECT
+# Health Data Management Information System
 # =========================================================
 
-# Flask web application banane ke liye use hota hai
+# Flask ke important modules import karna
 from flask import Flask, render_template, request, redirect, session, flash
 
-# SQLAlchemy database ko Flask se connect karta hai
+# Database handle karne ke liye SQLAlchemy
 from flask_sqlalchemy import SQLAlchemy
 
-# dotenv .env file se variables load karta hai
+# .env file load karne ke liye
 from dotenv import load_dotenv
 
-# os system variables access karne ke liye
+# OS operations ke liye
 import os
 
-# random OTP generate karne ke liye
+# OTP generate karne ke liye
 import random
 
+# OpenAI chatbot ke liye
+from openai import OpenAI
+
 # =========================================================
-# ENVIRONMENT VARIABLES LOAD KARNA
+# ENV FILE LOAD
 # =========================================================
 
-# .env file ka data load karega
+# .env file ke variables load honge
 load_dotenv()
 
 # =========================================================
-# FLASK APPLICATION CREATE KARNA
+# FLASK APP INITIALIZE
 # =========================================================
 
-# Flask app object create ho raha hai
+# Flask app create
 app = Flask(__name__)
 
-# =========================================================
-# SECRET KEY
-# =========================================================
-
-# Secret key session aur security ke liye use hoti hai
+# Session aur flash messages ke liye secret key
 app.secret_key = "hdmis_secret"
 
 # =========================================================
 # DATABASE CONFIGURATION
 # =========================================================
 
-# DATABASE_URL environment variable se database URL lena
+# Environment variable se database URL lena
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Agar DATABASE_URL nahi mila
-# toh SQLite database use hoga
+# Agar Render/PostgreSQL available nahi hai
+# to local sqlite database use hoga
 if not DATABASE_URL:
     DATABASE_URL = "sqlite:///database.db"
 
-# Flask ko database URI provide karna
+# Flask database config
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-
-# Modification tracking band karna
-# performance better hoti hai
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# SQLAlchemy initialize karna
+# Database object create
 db = SQLAlchemy(app)
+
+# =========================================================
+# OPENAI CONFIGURATION
+# =========================================================
+
+# OpenAI client initialize
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
 
 # =========================================================
 # USER TABLE
 # =========================================================
-
-# Is table me:
-# Patient
-# Doctor
-# Admin
-# ka data store hoga
 
 class User(db.Model):
 
@@ -78,50 +78,38 @@ class User(db.Model):
     # User ka naam
     name = db.Column(db.String(200))
 
-    # Email unique hoga
+    # Email unique rahega
     email = db.Column(db.String(200), unique=True)
 
-    # Password store hoga
+    # Password
     password = db.Column(db.String(200))
 
-    # Mobile number
-    mobile = db.Column(db.String(20))
-
-    # Role:
-    # patient / doctor / admin
-    role = db.Column(db.String(50))
+    # Role -> Patient ya Doctor
+    role = db.Column(db.String(100))
 
 # =========================================================
 # APPOINTMENT TABLE
 # =========================================================
-
-# Appointment details store hongi
 
 class Appointment(db.Model):
 
     # Primary key
     id = db.Column(db.Integer, primary_key=True)
 
-    # Patient ka naam
+    # Patient name
     patient = db.Column(db.String(200))
 
-    # Doctor ka naam
+    # Doctor name
     doctor = db.Column(db.String(200))
+
+    # Disease name
+    disease = db.Column(db.String(200))
 
     # Appointment date
     date = db.Column(db.String(100))
 
-    # Appointment status
-    # Pending / Approved / Rejected
+    # Status -> Pending / Completed
     status = db.Column(db.String(100))
-
-# =========================================================
-# DATABASE TABLE CREATE KARNA
-# =========================================================
-
-# Automatically tables create karega
-with app.app_context():
-    db.create_all()
 
 # =========================================================
 # HOME PAGE
@@ -130,81 +118,57 @@ with app.app_context():
 @app.route("/")
 def home():
 
-    # User ko login page pe bhejna
-    return redirect("/login")
+    # Home page render karega
+    return render_template("index.html")
 
 # =========================================================
-# USER REGISTRATION
+# REGISTER PAGE
 # =========================================================
-
-# GET  -> Register page open karega
-# POST -> Form submit karega
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
-    # Agar form submit hua hai
+    # Agar form submit hua
     if request.method == "POST":
 
         # Form data lena
         name = request.form["name"]
-
         email = request.form["email"]
-
         password = request.form["password"]
-
-        mobile = request.form["mobile"]
-
         role = request.form["role"]
 
-        # =================================================
-        # CHECK KARNA KI EMAIL PEHLE SE EXIST KARTI HAI YA NAHI
-        # =================================================
+        # Check karo email already exist karta hai ya nahi
+        existing_user = User.query.filter_by(email=email).first()
 
-        existing = User.query.filter_by(email=email).first()
+        if existing_user:
 
-        # Agar email already exist karti hai
-        if existing:
-
-            flash("Email already exists")
-
+            flash("User already exists")
             return redirect("/register")
 
-        # =================================================
-        # OTP GENERATE KARNA
-        # =================================================
-
-        # Random 4-digit OTP generate hoga
+        # Random OTP generate
         otp = random.randint(1000, 9999)
 
-        # OTP session me save karna
+        # OTP aur temporary data session me save
         session["otp"] = str(otp)
 
-        # Temporary user data session me store karna
-        session["temp_user"] = {
+        session["temp_name"] = name
+        session["temp_email"] = email
+        session["temp_password"] = password
+        session["temp_role"] = role
 
-            "name": name,
-
-            "email": email,
-
-            "password": password,
-
-            "mobile": mobile,
-
-            "role": role
-        }
-
-        # OTP terminal me print hoga
+        # Console me OTP show
         print("OTP:", otp)
 
-        # User ko OTP verification page pe bhejna
+        # Flash message me OTP show
+        flash(f"Demo OTP: {otp}")
+
+        # OTP verification page pe bhejo
         return redirect("/verify-otp")
 
-    # Register page open karna
     return render_template("register.html")
 
 # =========================================================
-# OTP VERIFICATION
+# OTP VERIFICATION PAGE
 # =========================================================
 
 @app.route("/verify-otp", methods=["GET", "POST"])
@@ -213,55 +177,36 @@ def verify_otp():
     # Agar form submit hua
     if request.method == "POST":
 
-        # User ka entered OTP lena
-        entered = request.form["otp"]
+        # User ka entered OTP
+        user_otp = request.form["otp"]
 
-        # =================================================
-        # OTP VERIFY KARNA
-        # =================================================
+        # OTP match hua
+        if user_otp == session.get("otp"):
 
-        # Entered OTP aur session OTP compare karna
-        if entered == session.get("otp"):
-
-            # Temporary user data lena
-            data = session.get("temp_user")
-
-            # New user object create karna
-            user = User(
-
-                name=data["name"],
-
-                email=data["email"],
-
-                password=data["password"],
-
-                mobile=data["mobile"],
-
-                role=data["role"]
+            # New user object create
+            new_user = User(
+                name=session.get("temp_name"),
+                email=session.get("temp_email"),
+                password=session.get("temp_password"),
+                role=session.get("temp_role")
             )
 
-            # User database me add karna
-            db.session.add(user)
-
-            # Changes save karna
+            # Database me save
+            db.session.add(new_user)
             db.session.commit()
 
-            # Success message show karna
             flash("Registration Successful")
 
-            # Login page pe redirect karna
             return redirect("/login")
 
         else:
 
-            # Agar OTP galat hai
             flash("Invalid OTP")
 
-    # OTP page open karna
     return render_template("verify_otp.html")
 
 # =========================================================
-# LOGIN SYSTEM
+# LOGIN PAGE
 # =========================================================
 
 @app.route("/login", methods=["GET", "POST"])
@@ -272,58 +217,46 @@ def login():
 
         # Email aur password lena
         email = request.form["email"]
-
         password = request.form["password"]
 
-        # =================================================
-        # DATABASE ME USER CHECK KARNA
-        # =================================================
-
+        # Database me user search
         user = User.query.filter_by(
-
             email=email,
-
             password=password
-
         ).first()
 
-        # =================================================
-        # LOGIN SUCCESS
-        # =================================================
-
+        # Agar user mil gaya
         if user:
 
-            # Session me user data save karna
+            # Session me user info save
             session["user"] = user.name
-
             session["role"] = user.role
 
-            # =============================================
-            # ROLE BASED LOGIN
-            # =============================================
-
-            # Patient login
-            if user.role == "patient":
-
-                return redirect("/patient-dashboard")
-
-            # Doctor login
-            elif user.role == "doctor":
-
+            # Doctor dashboard
+            if user.role == "Doctor":
                 return redirect("/doctor-dashboard")
 
-            # Admin login
-            else:
-
-                return redirect("/admin-dashboard")
+            # Patient dashboard
+            return redirect("/patient-dashboard")
 
         else:
 
-            # Invalid login message
-            flash("Invalid Login")
+            flash("Invalid Credentials")
 
-    # Login page open karna
     return render_template("login.html")
+
+# =========================================================
+# LOGOUT
+# =========================================================
+
+@app.route("/logout")
+def logout():
+
+    # Session clear
+    session.clear()
+
+    # Login page pe bhejo
+    return redirect("/login")
 
 # =========================================================
 # PATIENT DASHBOARD
@@ -332,15 +265,32 @@ def login():
 @app.route("/patient-dashboard")
 def patient_dashboard():
 
-    # Sare appointments fetch karna
-    appointments = Appointment.query.all()
+    # Current patient ke appointments fetch
+    appointments = Appointment.query.filter_by(
+        patient=session.get("user")
+    ).all()
 
-    # Patient dashboard open karna
+    # Total appointments
+    total = len(appointments)
+
+    # Completed appointments count
+    completed = len([
+        appt for appt in appointments
+        if appt.status == "Completed"
+    ])
+
+    # Pending appointments count
+    pending = len([
+        appt for appt in appointments
+        if appt.status == "Pending"
+    ])
+
     return render_template(
-
         "patient_dashboard.html",
-
-        appointments=appointments
+        appointments=appointments,
+        total=total,
+        completed=completed,
+        pending=pending
     )
 
 # =========================================================
@@ -350,152 +300,177 @@ def patient_dashboard():
 @app.route("/doctor-dashboard")
 def doctor_dashboard():
 
-    # Sare appointments fetch karna
+    # Sab appointments fetch
     appointments = Appointment.query.all()
 
-    # Doctor dashboard open karna
-    return render_template(
+    # Total appointments
+    total = len(appointments)
 
+    return render_template(
         "doctor_dashboard.html",
-
-        appointments=appointments
+        appointments=appointments,
+        total=total
     )
 
 # =========================================================
-# ADMIN DASHBOARD
-# =========================================================
-
-@app.route("/admin-dashboard")
-def admin_dashboard():
-
-    # Sare users fetch karna
-    users = User.query.all()
-
-    # Sare appointments fetch karna
-    appointments = Appointment.query.all()
-
-    # Admin dashboard open karna
-    return render_template(
-
-        "admin_dashboard.html",
-
-        users=users,
-
-        appointments=appointments
-    )
-
-# =========================================================
-# APPOINTMENT BOOKING
+# BOOK APPOINTMENT
 # =========================================================
 
 @app.route("/appointment", methods=["GET", "POST"])
 def appointment():
 
-    # Agar form submit hua
+    # Form submit hone pe
     if request.method == "POST":
 
         # Form data lena
         patient = request.form["patient"]
-
         doctor = request.form["doctor"]
-
+        disease = request.form["disease"]
         date = request.form["date"]
 
-        # =================================================
-        # APPOINTMENT OBJECT CREATE KARNA
-        # =================================================
-
-        ap = Appointment(
-
+        # New appointment object
+        new_appointment = Appointment(
             patient=patient,
-
             doctor=doctor,
-
+            disease=disease,
             date=date,
-
-            # Default status Pending
             status="Pending"
         )
 
-        # Appointment database me add karna
-        db.session.add(ap)
-
-        # Changes save karna
+        # Database me save
+        db.session.add(new_appointment)
         db.session.commit()
 
-        # Patient dashboard pe redirect karna
+        flash("Appointment Booked Successfully")
+
         return redirect("/patient-dashboard")
 
-    # Sare appointments fetch karna
-    appointments = Appointment.query.all()
+    return render_template("appointment.html")
 
-    # Appointment page open karna
+# =========================================================
+# SEARCH PATIENT
+# =========================================================
+
+@app.route("/search", methods=["GET", "POST"])
+def search():
+
+    appointments = []
+
+    # Search form submit hua
+    if request.method == "POST":
+
+        # Patient name lena
+        patient_name = request.form["patient"]
+
+        # Database search
+        appointments = Appointment.query.filter(
+            Appointment.patient.like(f"%{patient_name}%")
+        ).all()
+
     return render_template(
-
-        "appointment.html",
-
+        "search.html",
         appointments=appointments
     )
 
 # =========================================================
-# CHATBOT PAGE
+# MEDICAL HISTORY
 # =========================================================
 
-@app.route("/chatbot")
+@app.route("/history")
+def history():
+
+    # Current user ka medical history
+    appointments = Appointment.query.filter_by(
+        patient=session.get("user")
+    ).all()
+
+    return render_template(
+        "history.html",
+        appointments=appointments
+    )
+
+# =========================================================
+# REPORTS PAGE
+# =========================================================
+
+@app.route("/reports")
+def reports():
+
+    # All appointments fetch
+    appointments = Appointment.query.all()
+
+    return render_template(
+        "reports.html",
+        appointments=appointments
+    )
+
+# =========================================================
+# AI CHATBOT
+# =========================================================
+
+@app.route("/chatbot", methods=["GET", "POST"])
 def chatbot():
 
-    # Chatbot page open karna
-    return render_template("chatbot.html")
+    # Default response blank
+    response = ""
+
+    # Form submit hone pe
+    if request.method == "POST":
+
+        # User question lena
+        question = request.form["question"]
+
+        try:
+
+            # OpenAI API call
+            ai_response = client.chat.completions.create(
+
+                model="gpt-3.5-turbo",
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": question
+                    }
+                ]
+            )
+
+            # AI response extract
+            response = ai_response.choices[0].message.content
+
+        except Exception as e:
+
+            # Error show
+            response = str(e)
+
+    return render_template(
+        "chatbot.html",
+        response=response
+    )
 
 # =========================================================
 # AI PREDICTION PAGE
 # =========================================================
 
-@app.route("/ai-prediction")
-def ai_prediction():
+@app.route("/prediction")
+def prediction():
 
-    # AI prediction page open karna
-    return render_template("ai_prediction.html")
-
-# =========================================================
-# SEARCH PAGE
-# =========================================================
-
-@app.route("/search")
-def search():
-
-    # Sare appointments fetch karna
-    appointments = Appointment.query.all()
-
-    # Search page open karna
-    return render_template(
-
-        "search.html",
-
-        appointments=appointments
-    )
+    return render_template("prediction.html")
 
 # =========================================================
-# LOGOUT
+# DATABASE CREATE
 # =========================================================
 
-@app.route("/logout")
-def logout():
+# Agar tables exist nahi karti to create karo
+with app.app_context():
 
-    # Session data clear karna
-    session.clear()
-
-    # Login page pe bhejna
-    return redirect("/login")
+    db.create_all()
 
 # =========================================================
-# APPLICATION RUN KARNA
+# RUN APPLICATION
 # =========================================================
 
 if __name__ == "__main__":
 
-    # Flask app run karega
-
-    # debug=True ka matlab:
-    # Code change hote hi server automatically restart hoga
+    # Flask app run
     app.run(debug=True)
