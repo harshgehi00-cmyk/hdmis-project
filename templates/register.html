@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HDMIS Register</title>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+
+height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+background:
+linear-gradient(rgba(15,23,42,0.7),
+rgba(37,99,235,0.8)),
+
+url('https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=1600');
+
+background-size:cover;
+overflow:hidden;
+}
+
+.register-box{
+
+width:470px;
+
+background:rgba(255,255,255,0.12);
+
+backdrop-filter:blur(18px);
+
+padding:40px;
+
+border-radius:30px;
+
+box-shadow:0 10px 35px rgba(0,0,0,0.25);
+
+color:white;
+
+animation:fade 1s;
+}
+
+.logo{
+text-align:center;
+margin-bottom:20px;
+}
+
+.logo img{
+width:90px;
+margin-bottom:10px;
+}
+
+.logo h1{
+font-size:45px;
+}
+
+.logo p{
+opacity:0.8;
+margin-top:5px;
+}
+
+.input-box{
+margin-bottom:18px;
+position:relative;
+}
+
+.input-box input,
+.input-box select{
+
+width:100%;
+
+padding:18px 20px;
+
+border:none;
+
+border-radius:15px;
+
+background:rgba(255,255,255,0.15);
+
+color:white;
+
+font-size:16px;
+
+outline:none;
+}
+
+.input-box i{
+
+position:absolute;
+
+right:18px;
+
+top:20px;
+
+color:#ddd;
+}
+
+option{
+color:black;
+}
+
+input::placeholder{
+color:#ddd;
+}
+
+button{
+
+width:100%;
+
+padding:18px;
+
+border:none;
+
+border-radius:15px;
+
+background:white;
+
+color:#2563eb;
+
+font-size:20px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.03);
+}
+
+.login-link{
+
+text-align:center;
+
+margin-top:20px;
+}
+
+.login-link a{
+color:white;
+font-weight:bold;
+text-decoration:none;
+}
+
+@keyframes fade{
+
+from{
+opacity:0;
+transform:translateY(30px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<form class="register-box" method="POST">
+
+<div class="logo">
+
+<img src="https://cdn-icons-png.flaticon.com/512/2785/2785482.png">
+
+<h1>HDMIS</h1>
+
+<p>Health Data Management Information System</p>
+
+</div>
+
+<div class="input-box">
+
+<input
+type="text"
+name="name"
+placeholder="Full Name"
+required>
+
+<i class="fa-solid fa-user"></i>
+
+</div>
+
+<div class="input-box">
+
+<input
+type="email"
+name="email"
+placeholder="Email Address"
+required>
+
+<i class="fa-solid fa-envelope"></i>
+
+</div>
+
+<!-- IMPORTANT MOBILE FIELD -->
+
+<div class="input-box">
+
+<input
+type="text"
+name="mobile"
+placeholder="Mobile Number"
+required>
+
+<i class="fa-solid fa-phone"></i>
+
+</div>
+
+<div class="input-box">
+
+<input
+type="password"
+name="password"
+placeholder="Password"
+required>
+
+<i class="fa-solid fa-lock"></i>
+
+</div>
+
+<div class="input-box">
+
+<select name="role">
+
+<option value="patient">Patient</option>
+
+<option value="doctor">Doctor</option>
+
+<option value="admin">Admin</option>
+
+</select>
+
+</div>
+
+<button type="submit">
+Create Account
+</button>
+
+<div class="login-link">
+
+Already have account?
+
+<a href="/login">Login</a>
+
+</div>
+
+</form>
+
+</body>
+</html>

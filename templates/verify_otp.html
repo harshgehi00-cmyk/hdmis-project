@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Verify OTP</title>
+
+<style>
+
+body{
+font-family:Poppins;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+background:linear-gradient(135deg,#0f172a,#2563eb);
+}
+
+.box{
+background:white;
+padding:40px;
+border-radius:25px;
+width:400px;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:16px;
+margin-top:20px;
+border-radius:12px;
+border:1px solid #ddd;
+font-size:18px;
+}
+
+button{
+margin-top:20px;
+width:100%;
+padding:16px;
+background:#2563eb;
+color:white;
+border:none;
+border-radius:12px;
+font-size:18px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<form class="box" method="POST">
+
+<h1>OTP Verification</h1>
+
+<p>Enter OTP sent to your mobile/email</p>
+
+<input
+type="text"
+name="otp"
+placeholder="Enter OTP"
+required>
+
+<button type="submit">
+Verify OTP
+</button>
+
+</form>
+
+</body>
+
+</html>

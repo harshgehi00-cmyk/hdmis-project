@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Book Appointment</title>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+body{
+font-family:Poppins;
+background:#eef2ff;
+padding:40px;
+}
+
+.container{
+max-width:700px;
+margin:auto;
+background:white;
+padding:40px;
+border-radius:25px;
+box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+h1{
+margin-bottom:30px;
+color:#1e3a8a;
+}
+
+.input-box{
+margin-bottom:20px;
+}
+
+input,
+select{
+width:100%;
+padding:16px;
+border-radius:12px;
+border:1px solid #ddd;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:16px;
+border:none;
+background:#2563eb;
+color:white;
+font-size:18px;
+border-radius:12px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1d4ed8;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>
+<i class="fa-solid fa-calendar-check"></i>
+Book Appointment
+</h1>
+
+<form method="POST">
+
+<div class="input-box">
+<input type="text" name="patient" placeholder="Patient Name" required>
+</div>
+
+<div class="input-box">
+<select name="doctor">
+
+<option>Dr. Sharma</option>
+<option>Dr. Verma</option>
+<option>Dr. Rajput</option>
+
+</select>
+</div>
+
+<div class="input-box">
+<input type="date" name="date" required>
+</div>
+
+<button type="submit">
+Confirm Appointment
+</button>
+
+</form>
+
+</div>
+
+</body>
+</html>
